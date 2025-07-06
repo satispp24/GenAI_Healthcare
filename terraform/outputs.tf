@@ -11,6 +11,14 @@ output "lambda_presign_function_name" {
 }
 
 output "api_endpoint" {
-  value = "${aws_apigatewayv2_api.genai_api.api_endpoint}/${aws_apigatewayv2_stage.default.name}"
+  value = aws_apigatewayv2_api.genai_api.api_endpoint
+}
+
+output "api_invoke_url" {
+  value = "${aws_apigatewayv2_api.genai_api.api_endpoint}/invoke"
+}
+
+output "api_presign_url" {
+  value = "${aws_apigatewayv2_api.genai_api.api_endpoint}/presign"
 }
 

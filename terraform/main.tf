@@ -1,3 +1,16 @@
+terraform {
+  required_providers {
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -19,6 +32,15 @@ resource "aws_s3_bucket_public_access_block" "upload_bucket_pab" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "upload_bucket_encryption" {
+  bucket = aws_s3_bucket.upload_bucket.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -63,19 +85,26 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "../lambda"
+  output_path = "../lambda/lambda.zip"
+  excludes    = ["lambda.zip"]
+}
+
 resource "aws_cloudwatch_log_group" "process_audio_logs" {
   name              = "/aws/lambda/genai_process_audio"
   retention_in_days = 14
 }
 
 resource "aws_lambda_function" "process_audio" {
-  filename         = "../lambda/lambda.zip"
+  filename         = data.archive_file.lambda_zip.output_path
   function_name    = "genai_process_audio"
   handler          = "handler.lambda_handler"
   runtime          = "python3.11"
   role             = aws_iam_role.lambda_exec.arn
   timeout          = 300
-  source_code_hash = filebase64sha256("../lambda/lambda.zip")
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   environment {
     variables = {
       UPLOAD_BUCKET = aws_s3_bucket.upload_bucket.bucket
@@ -90,13 +119,13 @@ resource "aws_cloudwatch_log_group" "presign_url_logs" {
 }
 
 resource "aws_lambda_function" "presign_url" {
-  filename         = "../lambda/lambda.zip"
+  filename         = data.archive_file.lambda_zip.output_path
   function_name    = "genai_presign_url"
   handler          = "presign_url.lambda_handler"
   runtime          = "python3.11"
   role             = aws_iam_role.lambda_exec.arn
   timeout          = 30
-  source_code_hash = filebase64sha256("../lambda/lambda.zip")
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   environment {
     variables = {
       UPLOAD_BUCKET = aws_s3_bucket.upload_bucket.bucket
@@ -108,6 +137,13 @@ resource "aws_lambda_function" "presign_url" {
 resource "aws_apigatewayv2_api" "genai_api" {
   name          = "genai_api"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_credentials = false
+    allow_headers     = ["content-type", "x-amz-date", "authorization", "x-api-key"]
+    allow_methods     = ["*"]
+    allow_origins     = ["*"]
+    max_age          = 86400
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_process_integration" {
