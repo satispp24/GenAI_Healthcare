@@ -3,13 +3,14 @@ import UploadForm from './UploadForm';
 import NoteViewer from './NoteViewer';
 
 function App() {
-  const [noteUrl, setNoteUrl] = useState(null);
+  const [noteData, setNoteData] = useState(null);
 
   return (
-    <div style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
-      <h1>GenAI Healthcare POC</h1>
-      <UploadForm onUploadComplete={setNoteUrl} />
-      <NoteViewer noteUrl={noteUrl} />
+    <div style={{ maxWidth: 800, margin: 'auto', padding: 20 }}>
+      <h1>🧠 GenAI Healthcare POC</h1>
+      <p>Upload audio files to generate SOAP notes using AI</p>
+      <UploadForm onUploadComplete={setNoteData} />
+      <NoteViewer noteData={noteData} />
     </div>
   );
 }
