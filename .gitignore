@@ -8,3 +8,5 @@ terraform.tfstate*
 *.tfvars
 .DS_Store
 Thumbs.db
+.terraform.lock.hcl
+terraform.exe

@@ -53,7 +53,7 @@ End-to-end Generative AI application for clinical workflows that enables medical
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/satispp24/GenAI_Healthcare_POC.git
+git clone https://github.com/satispp24/GenAI_Healthcare.git
 cd GenAI_Healthcare_POC
 ```
 
