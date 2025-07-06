@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "s3_bucket_name" {
   description = "S3 bucket name for uploads and notes"
   type        = string
-  default     = "genai-clinical-audio-bucket-${random_id.bucket_suffix.hex}"
+  default     = "genai-clinical-audio-bucket-unique-2024"
   
   validation {
     condition = (
@@ -18,9 +18,5 @@ variable "s3_bucket_name" {
     )
     error_message = "S3 bucket name must be 3-63 chars, lowercase alphanumeric with dots/hyphens, no consecutive special chars."
   }
-}
-
-resource "random_id" "bucket_suffix" {
-  byte_length = 4
 }
 

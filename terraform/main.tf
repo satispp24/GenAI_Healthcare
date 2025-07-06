@@ -15,8 +15,12 @@ provider "aws" {
   region = var.aws_region
 }
 
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "upload_bucket" {
-  bucket = var.s3_bucket_name
+  bucket = "${var.s3_bucket_name}-${random_id.bucket_suffix.hex}"
 }
 
 resource "aws_s3_bucket_versioning" "upload_bucket_versioning" {
