@@ -1,0 +1,10 @@
+# Node modules
+/frontend/node_modules/
+/__pycache__/
+*.pyc
+lambda/lambda.zip
+.terraform/
+terraform.tfstate*
+*.tfvars
+.DS_Store
+Thumbs.db
