@@ -47,6 +47,18 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "upload_bucket_enc
   }
 }
 
+resource "aws_s3_bucket_cors_configuration" "upload_bucket_cors" {
+  bucket = aws_s3_bucket.upload_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET", "PUT", "POST", "DELETE"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag", "x-amz-server-side-encryption", "x-amz-request-id", "x-amz-id-2"]
+    max_age_seconds = 86400
+  }
+}
+
 resource "aws_iam_role" "lambda_exec" {
   name = "genai_lambda_exec_role"
   assume_role_policy = jsonencode({
@@ -107,7 +119,7 @@ resource "aws_lambda_function" "process_audio" {
   handler          = "handler.lambda_handler"
   runtime          = "python3.11"
   role             = aws_iam_role.lambda_exec.arn
-  timeout          = 300
+  timeout          = 900
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   environment {
     variables = {
@@ -138,6 +150,27 @@ resource "aws_lambda_function" "presign_url" {
   depends_on = [aws_cloudwatch_log_group.presign_url_logs]
 }
 
+resource "aws_cloudwatch_log_group" "upload_process_logs" {
+  name              = "/aws/lambda/genai_upload_process"
+  retention_in_days = 14
+}
+
+resource "aws_lambda_function" "upload_and_process" {
+  filename         = data.archive_file.lambda_zip.output_path
+  function_name    = "genai_upload_process"
+  handler          = "upload_and_process.lambda_handler"
+  runtime          = "python3.11"
+  role             = aws_iam_role.lambda_exec.arn
+  timeout          = 900
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  environment {
+    variables = {
+      UPLOAD_BUCKET = aws_s3_bucket.upload_bucket.bucket
+    }
+  }
+  depends_on = [aws_cloudwatch_log_group.upload_process_logs]
+}
+
 resource "aws_apigatewayv2_api" "genai_api" {
   name          = "genai_api"
   protocol_type = "HTTP"
@@ -166,6 +199,14 @@ resource "aws_apigatewayv2_integration" "lambda_presign_integration" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "lambda_upload_process_integration" {
+  api_id           = aws_apigatewayv2_api.genai_api.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = aws_lambda_function.upload_and_process.arn
+  integration_method = "POST"
+  payload_format_version = "2.0"
+}
+
 resource "aws_apigatewayv2_route" "process_route" {
   api_id    = aws_apigatewayv2_api.genai_api.id
   route_key = "POST /invoke"
@@ -176,6 +217,12 @@ resource "aws_apigatewayv2_route" "presign_route" {
   api_id    = aws_apigatewayv2_api.genai_api.id
   route_key = "GET /presign"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_presign_integration.id}"
+}
+
+resource "aws_apigatewayv2_route" "upload_process_route" {
+  api_id    = aws_apigatewayv2_api.genai_api.id
+  route_key = "POST /upload-and-process"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_upload_process_integration.id}"
 }
 
 resource "aws_lambda_permission" "apigw_lambda_process" {
@@ -190,6 +237,14 @@ resource "aws_lambda_permission" "apigw_lambda_presign" {
   statement_id  = "AllowAPIGatewayInvokePresign"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.presign_url.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.genai_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "apigw_lambda_upload_process" {
+  statement_id  = "AllowAPIGatewayInvokeUploadProcess"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.upload_and_process.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.genai_api.execution_arn}/*/*"
 }

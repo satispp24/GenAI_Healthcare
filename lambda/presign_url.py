@@ -21,13 +21,12 @@ def lambda_handler(event, context):
         
         file_name = event['queryStringParameters']['fileName']
         
-        # Generate presigned URL
+        # Generate presigned URL without enforcing content type
         presigned_url = s3.generate_presigned_url(
             'put_object',
             Params={
                 'Bucket': bucket_name,
-                'Key': file_name,
-                'ContentType': 'audio/wav'
+                'Key': file_name
             },
             ExpiresIn=300
         )
