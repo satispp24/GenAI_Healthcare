@@ -118,7 +118,7 @@ cat > index.html << 'EOF'
                 
                 if (result.success) {
                     showStatus('✅ Upload successful! Transcription started.', 'success');
-                    showStatus('🔄 Auto-checking for results every 30 seconds...', 'info');
+                    showStatus('🔄 Auto-checking for results every 1 minute...', 'info');
                     
                     // Show check button
                     document.getElementById('checkBtn').style.display = 'inline-block';
@@ -179,15 +179,15 @@ cat > index.html << 'EOF'
                     document.getElementById('checkBtn').style.display = 'none';
                 } else if (result.transcript) {
                     showStatus('📝 Transcript ready, generating SOAP note...', 'info');
-                    setTimeout(() => checkResults(), 15000); // Check every 15 seconds
+                    setTimeout(() => checkResults(), 60000); // Check every 1 minute
                 } else {
-                    showStatus('🔄 Still transcribing... Checking again in 30 seconds.', 'info');
-                    setTimeout(() => checkResults(), 30000);
+                    showStatus('🔄 Still transcribing... Checking again in 1 minute.', 'info');
+                    setTimeout(() => checkResults(), 60000);
                 }
             } catch (error) {
                 console.log('Error checking results:', error);
-                showStatus(`⚠️ Error checking results: ${error.message}. Retrying...`, 'error');
-                setTimeout(() => checkResults(), 30000);
+                showStatus(`⚠️ Error checking results: ${error.message}. Retrying in 1 minute...`, 'error');
+                setTimeout(() => checkResults(), 60000);
             }
         }
         

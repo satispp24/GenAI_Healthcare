@@ -27,7 +27,7 @@
 5. **Background Processing** → Transcribe Medical processes audio (2-5 minutes)
 6. **S3 Trigger** → Transcript JSON saved to `medical/` folder triggers Lambda
 7. **SOAP Generation** → S3-triggered Lambda calls Amazon Bedrock (Claude 3)
-8. **Auto-Polling** → Frontend checks for results every 15-30 seconds
+8. **Auto-Polling** → Frontend checks for results every 60 seconds
 9. **Results Display** → Shows transcript and SOAP note when ready
 
 **📊 Processing Time**: 2-5 minutes (background processing)
