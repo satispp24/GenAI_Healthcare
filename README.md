@@ -47,7 +47,7 @@
 
 ### 1. Clone Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/satispp24/GenAI_Healthcare.git
 cd GenAI_Healthcare_POC
 ```
 
@@ -78,13 +78,7 @@ terraform output frontend_url
 # Visit the URL in your browser
 ```
 
-## 🚀 **LIVE SYSTEM STATUS**
 
-### Current Deployment
-- **Frontend URL**: http://13.216.187.250
-- **API Gateway**: https://b43vu3eud1.execute-api.us-east-1.amazonaws.com
-- **S3 Bucket**: genai-clinical-audio-bucket-unique-2024-7f0d6d94
-- **Status**: ✅ **FULLY OPERATIONAL**
 
 ### Verified Functionality
 - ✅ **Audio Upload**: Working via presigned URLs
@@ -369,18 +363,11 @@ MIT License - Free to use and modify for healthcare applications.
 
 ---
 
-## 🎯 **LIVE DEMO - Ready Now!**
-
-### Immediate Access
-1. **Visit**: http://13.216.187.250
-2. **Upload**: Select an audio file (WAV, MP3, M4A)
-3. **Process**: Click "🚀 Upload & Generate SOAP Note"
-4. **Results**: View AI-generated transcript and SOAP note
 
 ### Quick Deploy (New Instance)
 ```bash
 # Clone and deploy in minutes
-git clone <repository-url>
+git clone https://github.com/satispp24/GenAI_Healthcare.git
 cd GenAI_Healthcare_POC
 cd terraform
 deploy_complete.bat
@@ -408,7 +395,7 @@ P (Plan): Order ECG, consider cardiology referral, follow-up in 48 hours
 
 ---
 
-*Last Updated: January 2025*
+*Last Updated: July 2025*
 *Version: 3.0 - **FULLY OPERATIONAL***
 
 ---
